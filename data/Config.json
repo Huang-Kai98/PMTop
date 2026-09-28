@@ -1,0 +1,21 @@
+{
+  "filename": "Shell_12060",
+  "read_mode": "single_element_two_coeff",
+  "element_tag": 7,
+  "description": "read single_element matrix",
+  "RayleighDampingCoef": {
+    "Coef1": {
+      "alpha": 15,
+      "beta" : 1.5e-5
+    },
+    "Coef2": {
+      "alpha": 400,
+      "beta": 3.5e-5
+    }
+  },
+  "Interface": {
+    "Type": "OneWidth",
+    "Interface": 0.5
+  },
+  "IndexType": "MAC"
+}

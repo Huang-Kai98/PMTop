@@ -1,0 +1,196 @@
+#pragma once
+// Data types for Table.
+
+#include "intarray.h"
+#include "mem_alloc.hpp"
+#include <ostream>
+// Table 类
+// 用于存储元素之间的连接关系（类似稀疏矩阵）。
+// 使用压缩存储行（CSR，Compressed Sparse Row）格式，通过 I 和 J
+// 数组存储连接信息。
+// I 是行指针数组，J 是列索引数组。
+// 提供了初始化、添加连接、获取行内容等功能。
+//
+/** Data type Table. Table stores the connectivity of elements of TYPE I
+    to elements of TYPE II, for example, it may be Element-To-Face
+    connectivity table, etc. */
+class Table {
+protected:
+  /// size is the number of TYPE I elements.
+  int size;
+
+  /** Arrays for the connectivity information in the CSR storage.
+      I is of size "size+1", J is of size the number of connections
+      between TYPE I to TYPE II elements (actually stored I[size]). */
+  int *I, *J;
+
+public:
+  /// Creates an empty table
+  Table() {
+    size = -1;
+    I = J = nullptr;
+  }
+
+  /// Create a table with a fixed number of connections.
+  Table(int dim, int connections_per_row = 3);
+
+  /** Create a table with one entry per row with column indices given
+      by 'partitioning'. */
+  Table(int nrows, int *partitioning);
+
+  /// Next 7 methods are used together with the default constructor
+  void MakeI(int nrows);
+  void AddAColumnInRow(int r) { I[r]++; }
+  void AddColumnsInRow(int r, int ncol) { I[r] += ncol; }
+  void MakeJ();
+  void AddConnection(int r, int c) { J[I[r]++] = c; }
+  void AddConnections(int r, int *c, int nc);
+  void ShiftUpI();
+
+  /// Set the size and the number of connections for the table.
+  void SetSize(int dim, int connections_per_row);
+
+  /** Set the rows and the number of all connections for the table.
+      Does NOT initialize the whole array I ! (I[0]=0 and I[rows]=nnz only) */
+  void SetDims(int rows, int nnz);
+
+  /// Returns the number of TYPE I elements.
+  inline int Size() const { return size; }
+
+  /** Returns the number of connections in the table. If Finalize() is
+      not called, it returns the number of possible connections established
+      by the used constructor. Otherwise, it is exactly the number of
+      established connections before calling Finalize(). */
+  inline int Size_of_connections() const { return I[size]; }
+
+  /** Returns index of the connection between element i of TYPE I and
+      element j of TYPE II. If there is no connection between element i
+      and element j established in the table, then the return value is -1. */
+  int operator()(int i, int j) const;
+
+  /// Return row i in array row (the Table must be finalized)
+  void GetRow(int i, IntArray &row) const;
+
+  int RowSize(int i) const { return I[i + 1] - I[i]; }
+
+  const int *GetRow(int i) const { return J + I[i]; }
+  int *GetRow(int i) { return J + I[i]; }
+
+  int *GetI() { return I; };
+  int *GetJ() { return J; };
+  const int *GetI() const { return I; };
+  const int *GetJ() const { return J; };
+
+  void SetIJ(int *newI, int *newJ, int newsize = -1);
+
+  /** Establish connection between element i and element j in the table.
+      The return value is the index of the connection. It returns -1 if it
+      fails to establish the connection. Possibilities are there is not
+      enough memory on row i to establish connection to j, an attempt to
+      establish new connection after calling Finalize(). */
+  int Push(int i, int j);
+
+  /** Finalize the table initialization. The function may be called
+      only once, after the table has been initialized, in order to densen
+      array J (by getting rid of -1's in array J). Calling this function
+      will "freeze" the table and function Push will work no more.
+      Note: The table is functional even without calling Finalize(). */
+  void Finalize();
+
+  /// Returns the number of TYPE II elements (after Finalize() is called).
+  int Width() const;
+
+  /// Call this if data has been stolen.
+  void LoseData() {
+    size = -1;
+    I = J = nullptr;
+  }
+
+  /// Prints the table to stream out.
+  void Print(std::ostream &out = std::cout, int width = 4) const;
+
+  void Save(std::ostream &out) const;
+
+  /// Destroys Table.
+  ~Table();
+};
+
+///  Transpose a Table
+void Transpose(const Table &A, Table &At, int _ncols_A = -1);
+
+///  C = A * B  (as boolean matrices)
+void Mult(const Table &A, const Table &B, Table &C);
+
+// STable 类
+// 继承自 Table，表示对称连接表（对称稀疏矩阵）。
+// 在方法 Push 和 operator() 中，通过确保行列索引顺序一致性，保证对称性。
+
+/** Data type STable. STable is similar to Table, but it's for symmetric
+    connectivity, i.e. TYPE I is equivalent to TYPE II. In the first
+    dimension we put the elements with smaller index. */
+
+class STable : public Table {
+public:
+  /// Creates table with fixed number of connections.
+  STable(int dim, int connections_per_row = 3);
+
+  /** Returns index of the connection between element i of TYPE I and
+      element j of TYPE II. If there is no connection between element i
+      and element j established in the table, then the return value is -1. */
+  int operator()(int i, int j) const;
+
+  /** Establish connection between element i and element j in the table.
+      The return value is the index of the connection. It returns -1 if it
+      fails to establish the connection. Possibilities are there is not
+      enough memory on row i to establish connection to j, an attempt to
+      establish new connection after calling Finalize(). */
+  int Push(int i, int j);
+
+  /// Destroys STable.
+  ~STable() {}
+};
+
+// DSTable 类
+// 使用链表存储稀疏矩阵。
+// 适用于动态稀疏表的构建，特别是在内存分配频繁变化的场景。
+// 提供了迭代器 RowIterator，可以按行访问稀疏矩阵。
+
+class DSTable {
+private:
+  class Node {
+  public:
+    Node *Prev;
+    int Column, Index;
+  };
+
+  int NumRows, NumEntries;
+  Node **Rows;
+#ifdef MFEM_USE_MEMALLOC
+  MemAlloc<Node, 1024> NodesMem;
+#endif
+
+  int Push_(int r, int c);
+  int Index(int r, int c) const;
+
+public:
+  DSTable(int nrows);
+  int NumberOfRows() const { return (NumRows); }
+  int NumberOfEntries() const { return (NumEntries); }
+  int Push(int a, int b) { return ((a <= b) ? Push_(a, b) : Push_(b, a)); }
+  int operator()(int a, int b) const {
+    return ((a <= b) ? Index(a, b) : Index(b, a));
+  }
+  ~DSTable();
+
+  class RowIterator {
+  private:
+    Node *n;
+
+  public:
+    RowIterator(const DSTable &t, int r) { n = t.Rows[r]; }
+    int operator!() { return (n != NULL); }
+    void operator++() { n = n->Prev; }
+    int Column() { return (n->Column); }
+    int Index() { return (n->Index); }
+  };
+};

@@ -1,0 +1,11 @@
+# Local build and editor output
+/build/
+/cmake-build-*/
+/.cache/
+/.idea/
+/.vscode/
+/compile_commands.json
+
+# Keep configuration; store computational datasets separately
+/data/*
+!/data/Config.json
