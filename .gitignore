@@ -6,6 +6,7 @@
 /.vscode/
 /compile_commands.json
 
-# Keep configuration; store computational datasets separately
+# Keep configuration and selected TopShellDamp datasets
 /data/*
 !/data/Config.json
+!/data/TopShellDamp*
