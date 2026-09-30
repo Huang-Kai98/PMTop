@@ -1,6 +1,6 @@
 # PMTop
 
-PMTop is a C++ research codebase for finite element analysis, damped modal analysis, and eigenvalue/eigenvector sensitivity calculations. It reads ANSYS-exported model data and includes numerical routines for topology optimization.
+PMTop is a C++ research codebase for finite element analysis, damped modal analysis, and eigenvalue/eigenvector sensitivity calculations. It reads ANSYS-exported model data for structural dynamics and sensitivity studies.
 
 The current executable compares sensitivity methods for a damped system. It is a research driver with experiment settings in the source, rather than a command-line application with selectable workflows.
 
@@ -12,7 +12,7 @@ The current executable compares sensitivity methods for a damped system. It is a
 - Compare Nelson, augmented-system, and adjoint sensitivity calculations.
 - Evaluate modal indicators including MAC, MIR, and MPC.
 - Export model geometry to VTK and record diagnostic output.
-- Provide MMA/GCMMA optimization routines and standalone test programs.
+- Include standalone development and verification programs.
 
 ## Repository layout
 
@@ -20,7 +20,7 @@ The current executable compares sensitivity methods for a damped system. It is a
 | --- | --- |
 | `src/Algorithm/` | Modal analysis and sensitivity calculations |
 | `src/FEM/` | ANSYS readers, finite element types, assembly, and boundary conditions |
-| `src/NumericalAlgebra/` | Matrix/vector types, linear solvers, eigensolvers, and optimizers |
+| `src/NumericalAlgebra/` | Matrix/vector types, linear solvers, and eigensolvers |
 | `src/General/` | Configuration, logging, containers, and utilities |
 | `src/Mesh/` | VTK-related utilities |
 | `src/main/` | Current experiment driver |
@@ -38,9 +38,10 @@ The current build targets a Linux environment with Intel's C++ compiler. Install
 - ARPACK-NG, including C++ headers and the `arpackng` CMake package.
 - OpenMP, nlohmann/json 3.11.2 or newer, and spdlog.
 
-After loading your oneAPI environment:
+Load the Intel oneAPI environment before configuring and keep it active when running PMTop:
 
 ```sh
+source /opt/intel/oneapi/setvars.sh
 git clone https://github.com/Huang-Kai98/PMTop.git
 cd PMTop
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
@@ -51,6 +52,8 @@ cmake --build build --parallel
 The expected executable location is `build/src/main/PMTop`. If dependencies are installed outside standard search paths, set `CMAKE_PREFIX_PATH` or the relevant package's CMake directory. The release flags include `-xHost`, so the resulting binary targets the build machine's CPU capabilities.
 
 ## Run a supplied dataset
+
+**Current runtime issue:** the `TopShellDamp1010` example currently stops with a segmentation fault while reading element matrices. The commands below describe the intended setup; they are not a passing numerical example. See [validation status](docs/USAGE.md#6-troubleshooting-and-validation-scope).
 
 The committed `data/Config.json` retains the original experiment configuration. It references `Shell_12060` and `element_library.txt`, which are not included in this repository. Use the supplied full-element example for the uploaded TopShellDamp data:
 
@@ -63,9 +66,9 @@ cp docs/examples/Config.TopShellDamp1010.json \
 (cd build/run-topshelldamp1010 && ../src/main/PMTop)
 ```
 
-The program reads `Config.json` from its working directory. It writes `log.txt` and a model VTK file there and prints sensitivity comparisons and CPU timings to the terminal. See [the usage guide](docs/USAGE.md) for configuration fields and the other datasets.
+The program reads `Config.json` and writes `log.txt` in its working directory. After successful model initialization, it is designed to export a model VTK file and print sensitivity comparisons and CPU timings to the terminal. See [the usage guide](docs/USAGE.md) for configuration fields and the other datasets.
 
-These instructions are derived from the current source and CMake configuration. A successful build and numerical run have not been verified as part of this documentation update; `icpx` was unavailable on the documentation environment's PATH.
+Release configuration and compilation were verified on the development machine after sourcing `/opt/intel/oneapi/setvars.sh`, using Intel oneAPI C++ Compiler 2025.3.0 and oneMKL 2025.3.0. The build completed with warnings. The `TopShellDamp1010` runtime check failed in `AnsysLoad::ReadAnasysElementStifAndElementMass()` before modal or sensitivity calculations completed; numerical results have not been validated.
 
 ## Included data
 

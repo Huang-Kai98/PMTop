@@ -4,7 +4,13 @@
 
 The root `CMakeLists.txt` selects C++17 and Intel `icpx`. It requires the CMake packages `MKL`, `arpackng`, `OpenMP`, `nlohmann_json` (at least 3.11.2), and `spdlog`. oneMKL is configured for dynamic linking, Intel threading, and the LP64 interface.
 
-Load the compiler and library environment for your installation, then run the build commands in the [README](../README.md). Keep that environment active when running the executable so its shared libraries can be found.
+Load the compiler and library environment, then run the build commands in the [README](../README.md):
+
+```sh
+source /opt/intel/oneapi/setvars.sh
+```
+
+This is the oneAPI installation path on the development machine. Adjust it if your installation uses a different location. Keep the environment active when running the executable so its shared libraries can be found.
 
 The `test/` directory contains standalone programs. The current top-level CMake configuration does not add that directory or register a CTest suite. A successful application build therefore does not imply that those programs have been compiled or executed.
 
@@ -96,7 +102,19 @@ The `saveElementValue(...)` calls at the end of the driver are commented out. En
 | `element_library.txt` is missing | Use the supplied `all_element` example, or provide your own element library for a single-element mode |
 | A shared library cannot be loaded | Restore the compiler/library runtime environment used for the build |
 
-This documentation update does not change the solver or certify numerical results. Build and runtime verification remain outstanding because Intel `icpx` was not available on PATH during preparation. Check results against an appropriate reference solution for your model.
+### Verified build
+
+After sourcing `/opt/intel/oneapi/setvars.sh`, Release configuration and compilation completed successfully with Intel oneAPI C++ Compiler 2025.3.0, oneMKL 2025.3.0, and CMake 3.28.3. The resulting executable is `build/src/main/PMTop`.
+
+Compiler warnings remain, including a reference to a temporary in `src/NumericalAlgebra/sparsemat.cpp`, intentional null-pointer dereferences in `src/General/error.cpp`, and ambiguous `else` statements. Successful compilation does not establish runtime correctness.
+
+### Runtime check
+
+The `TopShellDamp1010` example read 121 nodes and 300 elements and reported 726 degrees of freedom. It then stopped with `SIGSEGV`. A debugger backtrace placed the failure in `AnsysLoad::ReadAnasysElementStifAndElementMass()`, called during model initialization.
+
+In the current matrix reader, `elem` and `Index` are declared inside each line-reading loop. Matrix-value lines therefore do not reliably retain the element identifier and entry index established by the preceding `Element` header. This is an unresolved reader defect; it must be corrected before the full-element example can be treated as a working run.
+
+No modal or sensitivity result is validated by this check. This documentation update leaves the solver implementation unchanged. Validate any subsequent fix and its numerical output against an appropriate reference solution.
 
 ## 7. Attribution
 
