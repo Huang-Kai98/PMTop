@@ -108,13 +108,13 @@ After sourcing `/opt/intel/oneapi/setvars.sh`, Release configuration and compila
 
 Compiler warnings remain, including a reference to a temporary in `src/NumericalAlgebra/sparsemat.cpp`, intentional null-pointer dereferences in `src/General/error.cpp`, and ambiguous `else` statements. Successful compilation does not establish runtime correctness.
 
-### Runtime check
+### Configuration-specific runtime notes
 
-The `TopShellDamp1010` example read 121 nodes and 300 elements and reported 726 degrees of freedom. It then stopped with `SIGSEGV`. A debugger backtrace placed the failure in `AnsysLoad::ReadAnasysElementStifAndElementMass()`, called during model initialization.
+PMTop has multiple input paths. `AnsysLoad` selects `all_element`, `single_element`, or `single_element_two_coeff` according to the `read_mode` in the working directory's `Config.json`; these modes are **not interchangeable**. Before running, ensure that `filename` points to the correct ANSYS model lists and that the required matrix files or `element_library.txt` are present. The repository's `data/Config.json` targets the locally supplied `Shell_12060`/`element_library.txt` workflow, whose source files are not committed; the `docs/examples/Config.TopShellDamp1010.json` file instead selects the included `TopShellDamp1010` full-element workflow.
 
-In the current matrix reader, `elem` and `Index` are declared inside each line-reading loop. Matrix-value lines therefore do not reliably retain the element identifier and entry index established by the preceding `Element` header. This is an unresolved reader defect; it must be corrected before the full-element example can be treated as a working run.
+An earlier check of **only** the `TopShellDamp1010` `all_element` example read 121 nodes and 300 elements (726 DOFs) but stopped during element-matrix loading. In the published `src/FEM/AnsysLoad.cpp`, `ReadAnasysElementStifAndElementMass()` declares `elem` and `Index` inside each line-reading loop; this can leave the matrix-value lines without a valid retained element identifier or index. That observation is specific to this reader path, **not** a conclusion that other correctly configured PMTop workflows cannot run. Selecting a `single_element*` workflow avoids this function, but requires a compatible element library and model data.
 
-No modal or sensitivity result is validated by this check. This documentation update leaves the solver implementation unchanged. Validate any subsequent fix and its numerical output against an appropriate reference solution.
+Compilation was verified as described above. A passing numerical run and its comparison with an independent reference must be established for the precise configuration and dataset used; the repository does not currently include a publicly independently verified end-to-end run of all paper examples. This documentation change does not modify source code or claim a new runtime validation.
 
 ## 7. Attribution
 
