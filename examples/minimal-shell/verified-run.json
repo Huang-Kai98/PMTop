@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "nodes": 231,
+  "elements": 200,
+  "dofs": 1386,
+  "read_mode": "single_element_two_coeff",
+  "element_tag": 2,
+  "indicators": {
+    "MIR": 0.726947,
+    "MPC": 0.732907,
+    "MAC": 0.552874
+  },
+  "representative_element_index_zero_based": 199,
+  "representative_sensitivities": {
+    "DC_NelsonSingle": -0.00377632,
+    "DC_NelsonAdd": -0.00377632,
+    "DC_AdjointAdd": -0.00377632,
+    "DC_AdjointNelson": -0.00377632,
+    "DC_Symm": -0.00377071
+  },
+  "adne_adbm_full_vector_difference_l2": 1.50782e-13,
+  "aspm_representative_relative_difference": 0.0014855732565037063,
+  "aspm_settings": {
+    "update_tolerance": 1e-05,
+    "maximum_iterations": 5,
+    "source": "existing src/main/main.cpp defaults"
+  },
+  "source_sha256": {
+    "src/main/main.cpp": "1ed6f449762a0b9585a50fdedd51bec646a234cc4ca308e720bfb257ac74429b",
+    "src/Algorithm/TOP.cpp": "1434ef3cbb906789971b51a9312823d7b114b1be76793e58513689668619aaeb"
+  },
+  "scope": "End-to-end execution of the published FEM driver; not a paper-data reproduction or an ASPM 1e-8 accuracy certificate."
+}

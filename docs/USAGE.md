@@ -38,7 +38,7 @@ A copy is available at [examples/Config.TopShellDamp1010.json](examples/Config.T
 | `single_element` | Reuse a matrix entry from `element_library.txt` across the mesh | `element_tag` |
 | `single_element_two_coeff` | Reuse stiffness/mass matrices and construct damping from two Rayleigh coefficient pairs | `element_tag`, `RayleighDampingCoef.Coef1`, `RayleighDampingCoef.Coef2`, and `Interface` |
 
-Both single-element modes require `element_library.txt`, which is not included. Use `all_element` for the supplied TopShellDamp datasets.
+Both single-element modes require `element_library.txt`. A compatible library and complete `Shell_2010` inputs are included in the [minimal shell example](../examples/minimal-shell/README.md). Use `all_element` for the supplied TopShellDamp datasets.
 
 In `single_element_two_coeff` mode, damping is assembled as `C = alpha * M + beta * K`. The implemented interface type is `OneWidth`: elements with centroid `y <= Interface.Interface` use `Coef1`; the remaining elements use `Coef2`.
 
@@ -99,7 +99,7 @@ The `saveElementValue(...)` calls at the end of the driver are commented out. En
 | A CMake package cannot be found | Install its development package and expose its package configuration directory |
 | `Config.json` cannot be opened | Run from the directory containing the intended configuration |
 | Model files cannot be opened | Match `filename` exactly, including case, and copy the required files into the run directory |
-| `element_library.txt` is missing | Use the supplied `all_element` example, or provide your own element library for a single-element mode |
+| `element_library.txt` is missing | Use the complete minimal shell example, or provide a compatible library for your single-element model |
 | A shared library cannot be loaded | Restore the compiler/library runtime environment used for the build |
 
 ### Verified build
@@ -110,11 +110,13 @@ Compiler warnings remain, including a reference to a temporary in `src/Numerical
 
 ### Configuration-specific runtime notes
 
+The [minimal shell example](../examples/minimal-shell/README.md) was successfully compiled and run on 2026-10-13 with the published C++ driver. Its `single_element_two_coeff` configuration loaded 231 nodes and 200 elements (1,386 DOFs), completed all five sensitivity methods and produced a geometry export. The full-vector ADNE/ADBM L2 difference was approximately `1.51e-13`. The supplied launcher checks the input hashes and actual output and writes `validation.json`. See the example README and its recorded result for the unchanged ASPM stopping settings and accuracy limits.
+
 PMTop has multiple input paths. `AnsysLoad` selects `all_element`, `single_element`, or `single_element_two_coeff` according to the `read_mode` in the working directory's `Config.json`; these modes are **not interchangeable**. Before running, ensure that `filename` points to the correct ANSYS model lists and that the required matrix files or `element_library.txt` are present. The repository's `data/Config.json` targets the locally supplied `Shell_12060`/`element_library.txt` workflow, whose source files are not committed; the `docs/examples/Config.TopShellDamp1010.json` file instead selects the included `TopShellDamp1010` full-element workflow.
 
 An earlier check of **only** the `TopShellDamp1010` `all_element` example read 121 nodes and 300 elements (726 DOFs) but stopped during element-matrix loading. In the published `src/FEM/AnsysLoad.cpp`, `ReadAnasysElementStifAndElementMass()` declares `elem` and `Index` inside each line-reading loop; this can leave the matrix-value lines without a valid retained element identifier or index. That observation is specific to this reader path, **not** a conclusion that other correctly configured PMTop workflows cannot run. Selecting a `single_element*` workflow avoids this function, but requires a compatible element library and model data.
 
-Compilation was verified as described above. A passing numerical run and its comparison with an independent reference must be established for the precise configuration and dataset used; the repository does not currently include a publicly independently verified end-to-end run of all paper examples. This documentation change does not modify source code or claim a new runtime validation.
+The successful minimal run applies to its exact inputs and reader mode. The repository does not currently include an independently verified end-to-end run of all paper examples. No C++ source code was changed for the minimal example.
 
 ## 7. Attribution
 

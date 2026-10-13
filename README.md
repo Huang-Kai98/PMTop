@@ -26,7 +26,19 @@ The current executable compares sensitivity methods for a damped system. It is a
 | `src/main/` | Current experiment driver |
 | `test/` | Standalone development and verification programs |
 | `data/` | Configuration and selected TopShellDamp datasets |
+| `examples/minimal-shell/` | Complete, verified small shell-model inputs and launcher |
 | `docs/USAGE.md` | Build, configuration, dataset, and execution details |
+
+## Minimal verified example
+
+The [minimal shell example](examples/minimal-shell/README.md) includes all inputs for a 231-node, 200-element model. It runs the existing C++ executable and completes all five sensitivity methods on a single CPU thread. After installing the build dependencies below:
+
+```sh
+source /opt/intel/oneapi/setvars.sh
+bash examples/minimal-shell/run.sh
+```
+
+The script builds PMTop, creates a separate output directory, runs the model and checks its output. A successful run prints `PASS` and saves `validation.json`, `stdout.log` and `Shell_2010.vtk`. The example README records the settings and numerical comparison; the C++ algorithms are unchanged.
 
 ## Build
 
@@ -59,7 +71,7 @@ PMTop selects its model input workflow from the `Config.json` file in the **run 
 - `single_element`: uses an entry selected by `element_tag` in a local `element_library.txt` for element matrices.
 - `single_element_two_coeff`: uses the element library for stiffness and mass and generates two-region Rayleigh damping from the coefficients and `Interface` specified in `Config.json`.
 
-**Matching the configuration to its input files is essential.** The committed `data/Config.json` describes a `Shell_12060` two-region study, but its model input and `element_library.txt` are not included in the public repository. It is not the configuration for the included `TopShellDamp*` files. A locally available `Shell_12060` model and element library can use that workflow without invoking the `all_element` matrix reader. The previous failed `all_element` example test must not be taken to mean that all PMTop configurations are unable to run.
+**Matching the configuration to its input files is essential.** The committed `data/Config.json` describes a `Shell_12060` two-region study, but its model lists are not included in the public repository. It is not the configuration for the included `TopShellDamp*` files or the minimal example. For a complete supplied single-element workflow, use `examples/minimal-shell/run.sh`, which selects `Shell_2010` and its compatible element library. The previous failed `all_element` example test must not be taken to mean that all PMTop configurations are unable to run.
 
 ### Example: supplied full-element dataset
 

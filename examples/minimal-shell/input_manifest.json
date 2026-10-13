@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Config.json",
+    "bytes": 459,
+    "sha256": "50099179258545686dfacd8c32c7f203a931faae90597be8941aee4b0ccf41b6"
+  },
+  {
+    "name": "Shell_2010_NLIST.lis",
+    "bytes": 19585,
+    "sha256": "206f17bb14d19e42b53bb892e0e444db6e555078882dd86fad8a53436cfc1617"
+  },
+  {
+    "name": "Shell_2010_ELIST.lis",
+    "bytes": 11305,
+    "sha256": "5663e732ec98eff71ef794a131e070ee00d7df189ffc2c25c767d5022d1caeed"
+  },
+  {
+    "name": "Shell_2010_ETLIST.lis",
+    "bytes": 407,
+    "sha256": "e2f0ff6b169e47453218f9ad34e77de843c7523ebb298562a87b644979ad1bad"
+  },
+  {
+    "name": "Shell_2010_DLIST.lis",
+    "bytes": 1418,
+    "sha256": "a9748740191310a4677823314a0717f28e162263c87009ee7040e3f8ce2d3889"
+  },
+  {
+    "name": "element_library.txt",
+    "bytes": 193495,
+    "sha256": "e4de6f8678279706788fd1ff0b0075e84bff7b7a31e431847fadb05d8aa8503f"
+  }
+]
