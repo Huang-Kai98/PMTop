@@ -51,11 +51,19 @@ cmake --build build --parallel
 
 The expected executable location is `build/src/main/PMTop`. If dependencies are installed outside standard search paths, set `CMAKE_PREFIX_PATH` or the relevant package's CMake directory. The release flags include `-xHost`, so the resulting binary targets the build machine's CPU capabilities.
 
-## Run a supplied dataset
+## Configure a model run
 
-**Current runtime issue:** the `TopShellDamp1010` example currently stops with a segmentation fault while reading element matrices. The commands below describe the intended setup; they are not a passing numerical example. See [validation status](docs/USAGE.md#6-troubleshooting-and-validation-scope).
+PMTop selects its model input workflow from the `Config.json` file in the **run directory** (the current working directory). The executable supports three distinct `read_mode` values:
 
-The committed `data/Config.json` retains the original experiment configuration. It references `Shell_12060` and `element_library.txt`, which are not included in this repository. Use the supplied full-element example for the uploaded TopShellDamp data:
+- `all_element`: reads individual element stiffness, mass, and damping matrices from `<filename>_elem_k.txt`, `<filename>_elem_m.txt`, and `<filename>_elem_c.txt`, together with the ANSYS model lists.
+- `single_element`: uses an entry selected by `element_tag` in a local `element_library.txt` for element matrices.
+- `single_element_two_coeff`: uses the element library for stiffness and mass and generates two-region Rayleigh damping from the coefficients and `Interface` specified in `Config.json`.
+
+**Matching the configuration to its input files is essential.** The committed `data/Config.json` describes a `Shell_12060` two-region study, but its model input and `element_library.txt` are not included in the public repository. It is not the configuration for the included `TopShellDamp*` files. A locally available `Shell_12060` model and element library can use that workflow without invoking the `all_element` matrix reader. The previous failed `all_element` example test must not be taken to mean that all PMTop configurations are unable to run.
+
+### Example: supplied full-element dataset
+
+For the uploaded `TopShellDamp1010` model, `docs/examples/Config.TopShellDamp1010.json` selects `all_element`. The commands below show the required file layout and invocation; this particular example has not been independently confirmed to finish with the current published source. See [configuration-specific runtime notes](docs/USAGE.md#6-troubleshooting-and-validation-scope).
 
 ```sh
 mkdir -p build/run-topshelldamp1010
@@ -68,7 +76,7 @@ cp docs/examples/Config.TopShellDamp1010.json \
 
 The program reads `Config.json` and writes `log.txt` in its working directory. After successful model initialization, it is designed to export a model VTK file and print sensitivity comparisons and CPU timings to the terminal. See [the usage guide](docs/USAGE.md) for configuration fields and the other datasets.
 
-Release configuration and compilation were verified on the development machine after sourcing `/opt/intel/oneapi/setvars.sh`, using Intel oneAPI C++ Compiler 2025.3.0 and oneMKL 2025.3.0. The build completed with warnings. The `TopShellDamp1010` runtime check failed in `AnsysLoad::ReadAnasysElementStifAndElementMass()` before modal or sensitivity calculations completed; numerical results have not been validated.
+Release configuration and compilation were verified on the development machine after sourcing `/opt/intel/oneapi/setvars.sh`, using Intel oneAPI C++ Compiler 2025.3.0 and oneMKL 2025.3.0. The build completed with warnings. Execution requires a dataset and `Config.json` compatible with the selected reader mode. No independently verified end-to-end reproduction log for the paper's numerical results is currently included in this repository.
 
 ## Included data
 
