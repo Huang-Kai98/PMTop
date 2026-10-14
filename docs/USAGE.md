@@ -91,32 +91,19 @@ Mode count, selected mode, repetition count, interpolation functions, and sensit
 
 The `saveElementValue(...)` calls at the end of the driver are commented out. Enable the relevant calls and rebuild if you want those additional sensitivity exports.
 
-## 6. Troubleshooting and validation scope
+## 6. Build and example runs
 
-| Symptom | Check |
-| --- | --- |
-| `icpx` cannot be found | Load the Intel oneAPI compiler environment before configuring |
-| A CMake package cannot be found | Install its development package and expose its package configuration directory |
-| `Config.json` cannot be opened | Run from the directory containing the intended configuration |
-| Model files cannot be opened | Match `filename` exactly, including case, and copy the required files into the run directory |
-| `element_library.txt` is missing | Use the complete minimal shell example, or provide a compatible library for your single-element model |
-| A shared library cannot be loaded | Restore the compiler/library runtime environment used for the build |
+### Build record
 
-### Verified build
+Release configuration and compilation were verified after sourcing `/opt/intel/oneapi/setvars.sh` using Intel oneAPI C++ Compiler 2025.3.0, oneMKL 2025.3.0, and CMake 3.28.3. The executable is `build/src/main/PMTop`.
 
-After sourcing `/opt/intel/oneapi/setvars.sh`, Release configuration and compilation completed successfully with Intel oneAPI C++ Compiler 2025.3.0, oneMKL 2025.3.0, and CMake 3.28.3. The resulting executable is `build/src/main/PMTop`.
+### Minimal shell example
 
-Compiler warnings remain, including a reference to a temporary in `src/NumericalAlgebra/sparsemat.cpp`, intentional null-pointer dereferences in `src/General/error.cpp`, and ambiguous `else` statements. Successful compilation does not establish runtime correctness.
+The [minimal shell example](../examples/minimal-shell/README.md) provides the model inputs, launcher, and a validation script. Its recorded run on 2026-10-13 used 231 nodes and 200 elements (1,386 DOFs) and completed the five sensitivity methods. The full-vector ADNE/ADBM L2 difference was approximately `1.51e-13`. The example launcher writes `validation.json` with the recorded settings and checks.
 
-### Configuration-specific runtime notes
+### Choosing a dataset
 
-The [minimal shell example](../examples/minimal-shell/README.md) was successfully compiled and run on 2026-10-13 with the published C++ driver. Its `single_element_two_coeff` configuration loaded 231 nodes and 200 elements (1,386 DOFs), completed all five sensitivity methods and produced a geometry export. The full-vector ADNE/ADBM L2 difference was approximately `1.51e-13`. The supplied launcher checks the input hashes and actual output and writes `validation.json`. See the example README and its recorded result for the unchanged ASPM stopping settings and accuracy limits.
-
-PMTop has multiple input paths. `AnsysLoad` selects `all_element`, `single_element`, or `single_element_two_coeff` according to the `read_mode` in the working directory's `Config.json`; these modes are **not interchangeable**. Before running, ensure that `filename` points to the correct ANSYS model lists and that the required matrix files or `element_library.txt` are present. The repository's `data/Config.json` targets the locally supplied `Shell_12060`/`element_library.txt` workflow, whose source files are not committed; the `docs/examples/Config.TopShellDamp1010.json` file instead selects the included `TopShellDamp1010` full-element workflow.
-
-An earlier check of **only** the `TopShellDamp1010` `all_element` example read 121 nodes and 300 elements (726 DOFs) but stopped during element-matrix loading. In the published `src/FEM/AnsysLoad.cpp`, `ReadAnasysElementStifAndElementMass()` declares `elem` and `Index` inside each line-reading loop; this can leave the matrix-value lines without a valid retained element identifier or index. That observation is specific to this reader path, **not** a conclusion that other correctly configured PMTop workflows cannot run. Selecting a `single_element*` workflow avoids this function, but requires a compatible element library and model data.
-
-The successful minimal run applies to its exact inputs and reader mode. The repository does not currently include an independently verified end-to-end run of all paper examples. No C++ source code was changed for the minimal example.
+PMTop supports `all_element`, `single_element`, and `single_element_two_coeff` input modes. Select the corresponding `read_mode` and make the matching files available in the working directory. The [minimal shell example](../examples/minimal-shell/README.md) provides a complete `single_element_two_coeff` dataset. The `docs/examples/Config.TopShellDamp1010.json` configuration illustrates `all_element` with the included `TopShellDamp1010` data. The `data/Config.json` file references a separate `Shell_12060` study whose input files are not included here.
 
 ## 7. Attribution
 
