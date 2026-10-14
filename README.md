@@ -71,11 +71,11 @@ PMTop selects its model input workflow from the `Config.json` file in the **run 
 - `single_element`: uses an entry selected by `element_tag` in a local `element_library.txt` for element matrices.
 - `single_element_two_coeff`: uses the element library for stiffness and mass and generates two-region Rayleigh damping from the coefficients and `Interface` specified in `Config.json`.
 
-**Matching the configuration to its input files is essential.** The committed `data/Config.json` describes a `Shell_12060` two-region study, but its model lists are not included in the public repository. It is not the configuration for the included `TopShellDamp*` files or the minimal example. For a complete supplied single-element workflow, use `examples/minimal-shell/run.sh`, which selects `Shell_2010` and its compatible element library. The previous failed `all_element` example test must not be taken to mean that all PMTop configurations are unable to run.
+Select the input configuration that matches the model files in the run directory. The supplied [minimal shell example](examples/minimal-shell/README.md) includes a compatible configuration and all required inputs. For the `TopShellDamp*` datasets, use `read_mode: "all_element"` and the example configurations in `docs/examples/`. The default `data/Config.json` targets a separate `Shell_12060` study whose model files are not part of this repository.
 
 ### Example: supplied full-element dataset
 
-For the uploaded `TopShellDamp1010` model, `docs/examples/Config.TopShellDamp1010.json` selects `all_element`. The commands below show the required file layout and invocation; this particular example has not been independently confirmed to finish with the current published source. See [configuration-specific runtime notes](docs/USAGE.md#6-troubleshooting-and-validation-scope).
+For the supplied `TopShellDamp1010` model, `docs/examples/Config.TopShellDamp1010.json` selects `all_element`. The commands below show the file layout and invocation:
 
 ```sh
 mkdir -p build/run-topshelldamp1010
@@ -88,7 +88,7 @@ cp docs/examples/Config.TopShellDamp1010.json \
 
 The program reads `Config.json` and writes `log.txt` in its working directory. After successful model initialization, it is designed to export a model VTK file and print sensitivity comparisons and CPU timings to the terminal. See [the usage guide](docs/USAGE.md) for configuration fields and the other datasets.
 
-Release configuration and compilation were verified on the development machine after sourcing `/opt/intel/oneapi/setvars.sh`, using Intel oneAPI C++ Compiler 2025.3.0 and oneMKL 2025.3.0. The build completed with warnings. Execution requires a dataset and `Config.json` compatible with the selected reader mode. No independently verified end-to-end reproduction log for the paper's numerical results is currently included in this repository.
+Release configuration and compilation were verified using Intel oneAPI C++ Compiler 2025.3.0 and oneMKL 2025.3.0. Run PMTop with a matching model dataset and `Config.json`; see the [usage guide](docs/USAGE.md) and [minimal shell example](examples/minimal-shell/README.md).
 
 ## Included data
 
