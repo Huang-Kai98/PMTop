@@ -67,7 +67,7 @@ Representative zero-based element index: 199. Typical printed sensitivities:
 
 The full-vector ADNE/ADBM L2 difference was approximately `1.51e-13`. The ASPM representative scalar differs by approximately `1.49e-3` relative under the unchanged loose stopping settings. The checker records this difference rather than claiming all methods have identical accuracy. Printed digits can vary across compatible compiler/library versions.
 
-This example confirms the complete published driver can run with the supplied configuration. It does not validate the separate `all_element` reader, every large model or every paper result.
+This example demonstrates the published driver using the supplied `single_element_two_coeff` configuration. Other model datasets use the input modes documented in [docs/USAGE.md](../../docs/USAGE.md).
 
 ## License
 
